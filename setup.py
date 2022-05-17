@@ -15,9 +15,15 @@ general_requirements = [
     'PyYAML >= 3.10',
     'sortedcontainers == 2.2.2',
     'typing-extensions == 3.10.0.2',
+    'markupsafe == 2.0.1',  # While flask revision < 2
+    'flask == 1.1.2',
+    'flask-cors == 3.0.10',
+    'gunicorn >= 20.0.0, < 21.0.0',
+    'werkzeug >= 1.0.0, < 2.0.0',
     ]
 
 api_requirements = [
+    'markupsafe == 2.0.1',  # While flask revision < 2
     'flask == 1.1.2',
     'flask-cors == 3.0.10',
     'gunicorn >= 20.0.0, < 21.0.0',
@@ -37,6 +43,11 @@ dev_requirements = [
     'openfisca-country-template >= 3.10.0, < 4.0.0',
     'openfisca-extension-template >= 1.2.0rc0, < 2.0.0',
     'pylint == 2.10.2',
+    'markupsafe == 2.0.1',  # While flask revision < 2
+    'flask == 1.1.2',
+    'flask-cors == 3.0.10',
+    'gunicorn >= 20.0.0, < 21.0.0',
+    'werkzeug >= 1.0.0, < 2.0.0',
     ] + api_requirements
 
 setup(
