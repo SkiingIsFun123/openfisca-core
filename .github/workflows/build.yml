@@ -16,7 +16,7 @@ jobs:
         numpy: [1.22.4, 1.21.6, 1.20.3]
         python: [3.10.4, 3.9.13, 3.8.12]
         exclude:
-          - numpy: 1.20.3
+          - numpy: 1.20.3 # Incompatible versions
             python: 3.10.4
 
     steps:
@@ -44,20 +44,26 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
           restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
-            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}
-            deps-${{ matrix.python }}-${{ matrix.numpy }}-
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
+            # deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-
+            # deps-${{ matrix.python }}-${{ matrix.numpy }}--
 
       - name: Install doc dependencies
-        run: make test-doc-install
+        run: | # Do not reinstall openfisca-core, otherwise it will do so from Github
+          tail -n +2 doc/requirements.txt > doc/requirements.tmp
+          mv doc/requirements.tmp doc/requirements.txt
+          make test-doc-install
 
       - name: Cache doc deps
         uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
-          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
+          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
           restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
-            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('doc/requirements.txt') }}
-            deps-${{ matrix.python }}-${{ matrix.numpy }}-
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
+            # deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-
+            # deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}--
+            # deps-${{ matrix.python }}-${{ matrix.numpy }}---
 
       - name: Build package
         run: make build

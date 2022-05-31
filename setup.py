@@ -16,7 +16,7 @@ general_requirements = [
     'numexpr >= 2.7.0, <= 3.0',
     'numpy >= 1.20, < 1.23',
     'psutil >= 5.4.7, < 6.0.0',
-    'pytest >= 6.0.0, < 7.0.0',  # For openfisca test
+    'pytest >= 6.2.5, < 7.0.0',  # For openfisca test
     'PyYAML >= 3.10',
     'sortedcontainers == 2.2.2',
     'typing-extensions == 3.10.0.2',
