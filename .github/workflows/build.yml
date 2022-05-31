@@ -14,7 +14,10 @@ jobs:
 
       matrix:
         numpy: [1.22.4, 1.21.6, 1.20.3]
-        python: [3.10.4, 3.9.13, 3.8.13]
+        python: [3.10.4, 3.9.13, 3.8.12]
+        exclude:
+          - numpy: 1.20.3
+            python: 3.10.4
 
     steps:
       - name: Checkout code
@@ -27,19 +30,22 @@ jobs:
         with:
           python-version: ${{ matrix.python }}  # Patch version must be specified to avoid any cache confusion, since the cache key depends on the full Python version. If left unspecified, different patch versions could be allocated between jobs, and any such difference would lead to a cache not found error.
 
+      - name: Install dependencies
+        run: |
+          make install
+          pip install numpy==${{ matrix.numpy }}
+
       - name: Cache deps
         uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
-          key: build-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
+          key: build-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
           restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
-            deps-${{ matrix.python }}-${{ hashFiles('setup.py') }}
-            deps-${{ matrix.python }}-
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-
 
       - name: Build package
-        run: |
-          make build
-          pip install numpy==${{ matrix.numpy }}
+        run: make build
 
       - name: Cache dist
         uses: actions/cache@v3
