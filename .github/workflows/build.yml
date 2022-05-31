@@ -33,18 +33,30 @@ jobs:
         with:
           python-version: ${{ matrix.python }}  # Patch version must be specified to avoid any cache confusion, since the cache key depends on the full Python version. If left unspecified, different patch versions could be allocated between jobs, and any such difference would lead to a cache not found error.
 
-      - name: Install dependencies
+      - name: Install core dependencies
         run: |
           make install
           pip install numpy==${{ matrix.numpy }}
 
-      - name: Cache deps
+      - name: Cache core deps
         uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
           key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
           restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
             deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-
+
+      - name: Install doc dependencies
+        run: make test-doc-install
+
+      - name: Cache doc deps
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
+          restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('doc/requirements.txt') }}
             deps-${{ matrix.python }}-${{ matrix.numpy }}-
 
       - name: Build package
