@@ -25,6 +25,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Checkout docs
+        run: make test-doc-checkout branch=${GITHUB_REF#refs/heads/}
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -39,7 +42,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
-          key: build-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
+          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
           restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
             deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}
             deps-${{ matrix.python }}-${{ matrix.numpy }}-

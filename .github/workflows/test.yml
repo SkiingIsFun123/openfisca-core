@@ -1,0 +1,163 @@
+name: test
+
+on:
+  workflow_call:
+    secrets:
+      github-token:
+        required: true
+
+jobs:
+  test-core:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.github-token }}
+      TERM: xterm-256color  # To colorize output of make tasks.
+
+    strategy:
+      fail-fast: true
+
+      matrix:
+        numpy: [1.22.4, 1.21.6, 1.20.3]
+        python: [3.10.4, 3.9.13, 3.8.12]
+        exclude:
+          - numpy: 1.20.3
+            python: 3.10.4
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python }}  # Patch version must be specified to avoid any cache confusion, since the cache key depends on the full Python version. If left unspecified, different patch versions could be allocated between jobs, and any such difference would lead to a cache not found error.
+
+      - name: Restore deps
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
+
+      - name: Run openfisca-core tests
+        run:  make test-core
+
+      - name: Submit coverage to Coveralls
+        if: ${{ matrix.numpy == '1.20.3' && matrix.python == '3.8.12' }}
+        run: |
+          pip install coveralls
+          coveralls --service=github
+
+  test-country-template:
+    needs: [test-core]
+    runs-on: ubuntu-latest
+
+    env:
+      TERM: xterm-256color  # To colorize output of make tasks.
+
+    strategy:
+      fail-fast: true
+
+      matrix:
+        numpy: [1.22.4, 1.21.6, 1.20.3]
+        python: [3.10.4, 3.9.13, 3.8.12]
+        exclude:
+          - numpy: 1.20.3
+            python: 3.10.4
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python }}  # Patch version must be specified to avoid any cache confusion, since the cache key depends on the full Python version. If left unspecified, different patch versions could be allocated between jobs, and any such difference would lead to a cache not found error.
+
+      - name: Restore deps
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
+
+      - name: Run Country Template tests
+        run: make test-country
+
+  test-extension-template:
+    needs: [test-core]
+    runs-on: ubuntu-latest
+
+    env:
+      TERM: xterm-256color  # To colorize output of make tasks.
+
+    strategy:
+      fail-fast: true
+
+      matrix:
+        numpy: [1.22.4, 1.21.6, 1.20.3]
+        python: [3.10.4, 3.9.13, 3.8.12]
+        exclude:
+          - numpy: 1.20.3
+            python: 3.10.4
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python }}  # Patch version must be specified to avoid any cache confusion, since the cache key depends on the full Python version. If left unspecified, different patch versions could be allocated between jobs, and any such difference would lead to a cache not found error.
+
+      - name: Restore deps
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
+
+      - name: Run Extension Template tests
+        run: make test-extension
+
+  test-doc:
+    needs: [test-core]
+    runs-on: ubuntu-latest
+
+    env:
+      NUMPY: 1.22.4
+      PYTHON: 3.10.4
+      TERM: xterm-256color  # To colorize output of make tasks.
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON }}  # Patch version must be specified to avoid any cache confusion, since the cache key depends on the full Python version. If left unspecified, different patch versions could be allocated between jobs, and any such difference would lead to a cache not found error.
+
+      - name: Restore deps
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: deps-${{ env.PYTHON }}-${{ env.NUMPY }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
+
+      - name: Cache docs
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: docs-${{ env.PYTHON }}-${{ env.NUMPY }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: make test-doc-install
+
+      - name: Run doc tests
+        run: make test-doc-build
