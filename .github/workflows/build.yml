@@ -44,9 +44,8 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
           restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
-            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ github.sha }}
-            # deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-
-            # deps-${{ matrix.python }}-${{ matrix.numpy }}--
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-
+            deps-${{ matrix.python }}-${{ matrix.numpy }}--
 
       - name: Install doc dependencies
         run: | # Do not reinstall openfisca-core, otherwise it will do so from Github
@@ -60,10 +59,9 @@ jobs:
           path: ${{ env.pythonLocation }}
           key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
           restore-keys: | # in case of a cache miss (systematically unless the same commit is built repeatedly), the keys below will be used to restore dependencies from previous builds, and the cache will be stored at the end of the job, making up-to-date dependencies available for all jobs of the workflow; see more at https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows#example-using-the-cache-action
-            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
-            # deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-
-            # deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}--
-            # deps-${{ matrix.python }}-${{ matrix.numpy }}---
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-
+            deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}--
+            deps-${{ matrix.python }}-${{ matrix.numpy }}---
 
       - name: Build package
         run: make build

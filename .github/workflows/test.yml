@@ -156,13 +156,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.pythonLocation }}
-          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
-
-      - name: Cache docs
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.pythonLocation }}
-          key: docs-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
+          key: deps-${{ matrix.python }}-${{ matrix.numpy }}-${{ hashFiles('setup.py') }}-${{ hashFiles('doc/requirements.txt') }}-${{ github.sha }}
 
       - name: Run doc tests
         run: make test-doc-build
